@@ -1,101 +1,319 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { Frequency } from "@/types/frequency";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [initialDeposit, setInitialDeposit] = useState("");
+  const [regularDeposit, setRegularDeposit] = useState("");
+  const [interestRate, setInterestRate] = useState("");
+  const [inflationRate, setInflationRate] = useState("2%");
+  const [depositShowDropdown, setDepositShowDropdown] = useState(false);
+  const [compoundShowDropdown, setCompoundShowDropdown] = useState(false);
+  const [regularDepositFrequency, setRegularDepositFrequency] = useState(Frequency.Monthly);
+  const [compoundFrequency, setCompoundFrequency] = useState(Frequency.Monthly);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const depositDropdownRef = useRef<HTMLDivElement>(null);
+  const compoundDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (depositDropdownRef.current && !depositDropdownRef.current.contains(event.target as Node)) {
+        setDepositShowDropdown(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [depositShowDropdown]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (compoundDropdownRef.current && !compoundDropdownRef.current.contains(event.target as Node)) {
+        setCompoundShowDropdown(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [compoundShowDropdown]);
+  
+  const handleInitialDepositChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    let value = event.target.value;  
+
+    if (!value.startsWith("$")) {
+      value = "$" + value.replace("$", "");
+    }
+
+    const regex = /^\$\d*\.?\d{0,2}$/;
+    if (regex.test(value)) {
+      setInitialDeposit(value);
+    }
+  }
+
+  const handleRegularDepositChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    let value = event.target.value;  
+
+    if (!value.startsWith("$")) {
+      value = "$" + value.replace("$", "");
+    }
+
+    const regex = /^\$\d*\.?\d{0,2}$/;
+    if (regex.test(value)) {
+      setRegularDeposit(value);
+    }
+  }
+
+  const handleInterestRateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    let value = event.target.value;
+
+    setInterestRate(value);
+  }
+
+  const handleInflationRateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    let value = event.target.value;
+
+    setInflationRate(value);
+  }
+
+  const handleInitialDepositBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+    let value = event.target.value;
+
+    while (value.startsWith("$0") && value.length > 2 && !value.replace("$0", "").startsWith(".")) {
+      value = "$" + value.slice(2);
+    }
+
+    if (value.includes(".") && value.split(".")[1].length === 0) {
+      value = value.replace(".", "");
+    }
+
+    if (value.includes(".") && value.split(".")[1] === "0") {
+      value = value.replace(".0", "");
+    }
+
+    if (value.includes(".") && value.split(".")[1] === "00") {
+      value = value.replace(".00", "");
+    }
+    
+    if (value === "$" || value === "") {
+      value = "$0";
+    }
+
+    setInitialDeposit(value);
+  }
+
+  const handleRegularDepositBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+    let value = event.target.value;
+
+    while (value.startsWith("$0") && value.length > 2 && !value.replace("$0", "").startsWith(".")) {
+      value = "$" + value.slice(2);
+    }
+
+    if (value.includes(".") && value.split(".")[1].length === 0) {
+      value = value.replace(".", "");
+    }
+
+    if (value.includes(".") && value.split(".")[1] === "0") {
+      value = value.replace(".0", "");
+    }
+
+    if (value.includes(".") && value.split(".")[1] === "00") {
+      value = value.replace(".00", "");
+    }
+    
+    if (value === "$" || value === "") {
+      value = "$0";
+    }
+
+    setRegularDeposit(value);
+  }
+
+  // TODO: Fix formatting for interest rate and inflation rate
+
+  const handleInterestRateBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+    let value = event.target.value;
+
+    while (value.startsWith("0") && value.length > 1 && !value.startsWith(".")) {
+      value = value.slice(1);
+    }
+
+    if (value.includes(".") && value.split(".")[1].replace("%", "").length === 0) {
+      value = value.replace(".", "");
+    }
+
+    if (value.includes(".") && value.split(".")[1].replace("%", "") === "0") {
+      value = value.replace(".0", "");
+    }
+
+    if (value.includes(".") && value.split(".")[1].replace("%", "") === "00") {
+      value = value.replace(".00", "");
+    }
+
+    if (value === "" || value === ".") {
+      value = "0%";
+    }
+
+    if (!value.endsWith("%")) {
+      value = value + "%";
+    }
+
+    setInterestRate(value);
+  }
+
+  const handleInflationRateBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+    let value = event.target.value;
+
+    while (value.startsWith("0") && value.length > 1 && !value.startsWith(".")) {
+      value = value.slice(1);
+    }
+
+    if (value.includes(".") && value.split(".")[1].length === 0) {
+      value = value.replace(".", "");
+    }
+
+    if (value.includes(".") && value.split(".")[1] === "0") {
+      value = value.replace(".0", "");
+    }
+
+    if (value.includes(".") && value.split(".")[1] === "00") {
+      value = value.replace(".00", "");
+    }
+
+    if (value === "" || value === ".") {
+      value = "0%";
+    }
+
+    if (!value.endsWith("%")) {
+      value = value + "%";
+    }
+
+    setInflationRate(value);
+  }
+
+  const handleDepositDropdownToggled = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setDepositShowDropdown(!depositShowDropdown);
+  }
+
+  const handleCompoundDropdownToggled = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setCompoundShowDropdown(!compoundShowDropdown);
+  }
+
+  const handleDepoistDropdownItemClicked = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const value = event.currentTarget.textContent;
+    if (value) {
+      setRegularDepositFrequency(value as Frequency);
+    }
+    setDepositShowDropdown(false);
+  }
+
+  const handleCompoundDropdownItemClicked = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const value = event.currentTarget.textContent;
+    if (value) {
+      setCompoundFrequency(value as Frequency);
+    }
+    setCompoundShowDropdown(false);
+  }
+  
+  return (
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="flex flex-col items-center border-b border-gray-200 dark:border-gray-800">
+        <h1 className="text-center text-4xl font-bold">Advanced Compound Interest Calculator</h1>
+        <h2 className="text-center text-xl mt-2 mb-5">Find the best strategy to help your money will grow, adapted to changes in your life.</h2>
+      </div>
+      <div className="grid grid-cols-3 gap-4">
+        <div className="mt-5">
+          <div className="flex flex-col items-left mt-5 ml-5">
+            <label htmlFor="initialDeposit" className="block mb-2 text-lg font-semibold">Initial Deposit</label>
+            <input id="initialDeposit" type="text" value={initialDeposit} onChange={handleInitialDepositChange} onBlur={handleInitialDepositBlur} className="block p-2 h-10 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+          </div>
+          <div className="flex flex-col items-left mt-5 ml-5">
+            <label htmlFor="regularDeposit" className="block mb-2 text-lg font-semibold">Regular Deposit</label>
+            <input id="regularDeposit" type="text" value={regularDeposit} onChange={handleRegularDepositChange} onBlur={handleRegularDepositBlur} className="block p-2 h-10 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <div className="mt-5">
+          <div className="flex flex-col items-left mt-5 ml-5" ref={depositDropdownRef}>
+            <label htmlFor="regularDepositFrequency" className="block mb-2 text-lg font-semibold">Regular Deposit Frequency</label>
+            <div className="relative inline-block">
+              <button id="regularDepositFrequency" onClick={handleDepositDropdownToggled} data-dropdown-toggle="dropdown" className="text-gray-900 border w-full border-gray-300 focus:ring-2 focus:outline-none focus:ring-blue-500 font-medium rounded-lg text-sm px-5 h-10 text-center inline-flex items-center bg-gray-50 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" type="button">
+                {regularDepositFrequency}
+                <svg className="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4"/>
+                </svg>
+              </button>
+              {depositShowDropdown && (
+                <div id="dropdown" className="absolute z-10 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
+                  <ul className="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownDefaultButton">
+                    <li>
+                      <button onClick={handleDepoistDropdownItemClicked} className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">{Frequency.Daily}</button>
+                    </li>
+                    <li>
+                      <button onClick={handleDepoistDropdownItemClicked} className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">{Frequency.Weekly}</button>
+                    </li>
+                    <li>
+                      <button onClick={handleDepoistDropdownItemClicked} className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">{Frequency.Fortnightly}</button>
+                    </li>
+                    <li>
+                      <button onClick={handleDepoistDropdownItemClicked} className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">{Frequency.Monthly}</button>
+                    </li>
+                    <li>
+                      <button onClick={handleDepoistDropdownItemClicked} className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">{Frequency.Annually}</button>
+                    </li>
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="flex flex-col items-left mt-5 ml-5" ref={compoundDropdownRef}>
+            <label htmlFor="compoundFrequency" className="block mb-2 text-lg font-semibold">Compound Frequency</label>
+            <div className="relative inline-block">
+              <button id="compoundFrequency" onClick={handleCompoundDropdownToggled} data-dropdown-toggle="dropdown" className="text-gray-900 border w-full border-gray-300 focus:ring-2 focus:outline-none focus:ring-blue-500 font-medium rounded-lg text-sm px-5 h-10 text-center inline-flex items-center bg-gray-50 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" type="button">
+                {compoundFrequency}
+                <svg className="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4"/>
+                </svg>
+              </button>
+              {compoundShowDropdown && (
+                <div id="dropdown" className="absolute z-10 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
+                  <ul className="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownDefaultButton">
+                    <li>
+                      <button onClick={handleCompoundDropdownItemClicked} className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">{Frequency.Daily}</button>
+                    </li>
+                    <li>
+                      <button onClick={handleCompoundDropdownItemClicked} className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">{Frequency.Weekly}</button>
+                    </li>
+                    <li>
+                      <button onClick={handleCompoundDropdownItemClicked} className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">{Frequency.Fortnightly}</button>
+                    </li>
+                    <li>
+                      <button onClick={handleCompoundDropdownItemClicked} className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">{Frequency.Monthly}</button>
+                    </li>
+                    <li>
+                      <button onClick={handleCompoundDropdownItemClicked} className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">{Frequency.Annually}</button>
+                    </li>
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="mt-5">
+          <div className="flex flex-col items-left mt-5 ml-5">
+            <label htmlFor="initialDeposit" className="block mb-2 text-lg font-semibold">Interest Rate</label>
+            <input id="initialDeposit" type="text" value={interestRate} onChange={handleInterestRateChange} onBlur={handleInterestRateBlur} className="block p-2 h-10 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+          </div>
+          <div className="flex flex-col items-left mt-5 ml-5">
+            <label htmlFor="regularDeposit" className="block mb-2 text-lg font-semibold">Inflation Rate</label>
+            <input id="regularDeposit" type="text" value={inflationRate} onChange={handleInflationRateChange} onBlur={handleInflationRateBlur} className="block p-2 h-10 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+          </div>
+        </div>
+      </div>
+      
+      {/* TODO: Add disclaimer below graph and in footer */}
     </div>
   );
 }
