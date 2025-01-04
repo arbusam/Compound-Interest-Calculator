@@ -43,26 +43,28 @@ export default function Home() {
   }, [compoundShowDropdown]);
   
   const handleInitialDepositChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    let value = event.target.value;  
+    let value = event.target.value;
 
     if (!value.startsWith("$")) {
       value = "$" + value.replace("$", "");
     }
 
     const regex = /^\$\d*\.?\d{0,2}$/;
+    
     if (regex.test(value)) {
       setInitialDeposit(value);
     }
   }
 
   const handleRegularDepositChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    let value = event.target.value;  
+    let value = event.target.value;
 
     if (!value.startsWith("$")) {
       value = "$" + value.replace("$", "");
     }
 
     const regex = /^\$\d*\.?\d{0,2}$/;
+
     if (regex.test(value)) {
       setRegularDeposit(value);
     }
@@ -71,13 +73,21 @@ export default function Home() {
   const handleInterestRateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     let value = event.target.value;
 
-    setInterestRate(value);
+    const regex = /^(?!.*\..*\.)\d*\.?\d*%?$/;
+    
+    if (regex.test(value)) {
+      setInterestRate(value);
+    }
   }
 
   const handleInflationRateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     let value = event.target.value;
 
-    setInflationRate(value);
+    const regex = /^(?!.*\..*\.)\d*\.?\d*%?$/;
+    
+    if (regex.test(value)) {
+      setInflationRate(value);
+    }
   }
 
   const handleInitialDepositBlur = (event: React.FocusEvent<HTMLInputElement>) => {
@@ -132,8 +142,6 @@ export default function Home() {
     setRegularDeposit(value);
   }
 
-  // TODO: Fix formatting for interest rate and inflation rate
-
   const handleInterestRateBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     let value = event.target.value;
 
@@ -153,8 +161,12 @@ export default function Home() {
       value = value.replace(".00", "");
     }
 
-    if (value === "" || value === ".") {
+    if (value === "" || value === "." || value === "%") {
       value = "0%";
+    }
+
+    if (value.startsWith(".")) {
+      value = "0" + value;
     }
 
     if (!value.endsWith("%")) {
@@ -183,8 +195,12 @@ export default function Home() {
       value = value.replace(".00", "");
     }
 
-    if (value === "" || value === ".") {
+    if (value === "" || value === "." || value === "%") {
       value = "0%";
+    }
+
+    if (value.startsWith(".")) {
+      value = "0" + value;
     }
 
     if (!value.endsWith("%")) {
