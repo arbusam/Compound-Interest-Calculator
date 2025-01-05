@@ -2,12 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Frequency } from "@/types/frequency";
+import Graph from "./graph";
 
 export default function Home() {
   const [initialDeposit, setInitialDeposit] = useState("");
   const [regularDeposit, setRegularDeposit] = useState("");
+  const [years, setYears] = useState("");
   const [interestRate, setInterestRate] = useState("");
-  const [inflationRate, setInflationRate] = useState("2%");
+  const [inflationRate, setInflationRate] = useState("3%");
   const [depositShowDropdown, setDepositShowDropdown] = useState(false);
   const [compoundShowDropdown, setCompoundShowDropdown] = useState(false);
   const [regularDepositFrequency, setRegularDepositFrequency] = useState(Frequency.Monthly);
@@ -67,6 +69,16 @@ export default function Home() {
 
     if (regex.test(value)) {
       setRegularDeposit(value);
+    }
+  }
+
+  const handleYearsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    let value = event.target.value;
+
+    const regex = /^\d*$/;
+
+    if (regex.test(value)) {
+      setYears(value);
     }
   }
 
@@ -243,17 +255,21 @@ export default function Home() {
       <div className="grid grid-cols-3 gap-4">
         <div className="mt-5">
           <div className="flex flex-col items-left mt-5 ml-5">
-            <label htmlFor="initialDeposit" className="block mb-2 text-lg font-semibold">Initial Deposit</label>
-            <input id="initialDeposit" type="text" value={initialDeposit} onChange={handleInitialDepositChange} onBlur={handleInitialDepositBlur} className="block p-2 h-10 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+            <label htmlFor="initialDeposit" className="block mb-2 text-md font-semibold">Initial Deposit</label>
+            <input id="initialDeposit" type="text" value={initialDeposit} placeholder="$" onChange={handleInitialDepositChange} onBlur={handleInitialDepositBlur} className="block p-2 h-10 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
           </div>
           <div className="flex flex-col items-left mt-5 ml-5">
-            <label htmlFor="regularDeposit" className="block mb-2 text-lg font-semibold">Regular Deposit</label>
-            <input id="regularDeposit" type="text" value={regularDeposit} onChange={handleRegularDepositChange} onBlur={handleRegularDepositBlur} className="block p-2 h-10 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+            <label htmlFor="regularDeposit" className="block mb-2 text-md font-semibold">Regular Deposit</label>
+            <input id="regularDeposit" type="text" value={regularDeposit} placeholder="$" onChange={handleRegularDepositChange} onBlur={handleRegularDepositBlur} className="block p-2 h-10 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+          </div>
+          <div className="flex flex-col items-left mt-5 ml-5">
+            <label htmlFor="years" className="block mb-2 text-md font-semibold">Number of Years</label>
+            <input id="years" type="text" value={years} onChange={handleYearsChange} className="block p-2 h-10 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
           </div>
         </div>
         <div className="mt-5">
           <div className="flex flex-col items-left mt-5 ml-5" ref={depositDropdownRef}>
-            <label htmlFor="regularDepositFrequency" className="block mb-2 text-lg font-semibold">Regular Deposit Frequency</label>
+            <label htmlFor="regularDepositFrequency" className="block mb-2 text-md font-semibold">Regular Deposit Frequency</label>
             <div className="relative inline-block">
               <button id="regularDepositFrequency" onClick={handleDepositDropdownToggled} data-dropdown-toggle="dropdown" className="text-gray-900 border w-full border-gray-300 focus:ring-2 focus:outline-none focus:ring-blue-500 font-medium rounded-lg text-sm px-5 h-10 text-center inline-flex items-center bg-gray-50 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" type="button">
                 {regularDepositFrequency}
@@ -285,7 +301,7 @@ export default function Home() {
             </div>
           </div>
           <div className="flex flex-col items-left mt-5 ml-5" ref={compoundDropdownRef}>
-            <label htmlFor="compoundFrequency" className="block mb-2 text-lg font-semibold">Compound Frequency</label>
+            <label htmlFor="compoundFrequency" className="block mb-2 text-md font-semibold">Compound Frequency</label>
             <div className="relative inline-block">
               <button id="compoundFrequency" onClick={handleCompoundDropdownToggled} data-dropdown-toggle="dropdown" className="text-gray-900 border w-full border-gray-300 focus:ring-2 focus:outline-none focus:ring-blue-500 font-medium rounded-lg text-sm px-5 h-10 text-center inline-flex items-center bg-gray-50 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" type="button">
                 {compoundFrequency}
@@ -319,16 +335,19 @@ export default function Home() {
         </div>
         <div className="mt-5">
           <div className="flex flex-col items-left mt-5 ml-5">
-            <label htmlFor="initialDeposit" className="block mb-2 text-lg font-semibold">Interest Rate</label>
+            <label htmlFor="initialDeposit" className="block mb-2 text-md font-semibold">Annual Interest Rate</label>
             <input id="initialDeposit" type="text" value={interestRate} onChange={handleInterestRateChange} onBlur={handleInterestRateBlur} className="block p-2 h-10 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
           </div>
-          <div className="flex flex-col items-left mt-5 ml-5">
-            <label htmlFor="regularDeposit" className="block mb-2 text-lg font-semibold">Inflation Rate</label>
+          <div className="flex flex-col items-left mt-3 ml-5">
+            <label htmlFor="regularDeposit" className="block text-md font-semibold">Annual Inflation Rate</label>
+            <p className="text-xs text-gray-500 dark:text-gray-400 -mt-1 mb-1">If unsure, leave it at 3%</p>
             <input id="regularDeposit" type="text" value={inflationRate} onChange={handleInflationRateChange} onBlur={handleInflationRateBlur} className="block p-2 h-10 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
           </div>
         </div>
       </div>
       
+      <div className="mt-10" />
+      <Graph />
       {/* TODO: Add disclaimer below graph and in footer */}
     </div>
   );
