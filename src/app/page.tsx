@@ -351,7 +351,7 @@ export default function Home() {
       
       <div className="mt-10" />
       {(initialDeposit !== "" && regularDeposit !== "" && years !== "" && interestRate !== "") && (
-        <Graph months={Number(years)*12} initialDeposit={Number(initialDeposit.replace("$", ""))} regularDeposit={Number(regularDeposit.replace("$", ""))} interestRate={Number(interestRate.replace("%", ""))}  />
+        <Graph years={Number(years)} initialDeposit={Number(initialDeposit.replace("$", ""))} regularDeposit={Number(regularDeposit.replace("$", ""))} interestRate={Number(interestRate.replace("%", ""))} inflationRate={Number(inflationRate.replace("%", ""))} regularDepositFrequency={regularDepositFrequency} compoundFrequency={compoundFrequency} />
       )}
       {/* TODO: Add disclaimer below graph and in footer */}
     </div>

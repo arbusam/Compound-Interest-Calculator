@@ -3,39 +3,138 @@
 import dynamic from 'next/dynamic';
 import 'chart.js/auto';
 import { ChartOptions } from 'chart.js/auto';
+import { Frequency } from '@/types/frequency';
 const Line = dynamic(() => import('react-chartjs-2').then((mod) => mod.Line), {
   ssr: false,
 });
 
 type GraphProps = {
-  months: number;
+  years: number;
   initialDeposit: number;
   regularDeposit: number;
   interestRate: number;
+  inflationRate: number;
+  regularDepositFrequency: Frequency;
+  compoundFrequency: Frequency;
 };
 
-const Graph = ({ months, initialDeposit, regularDeposit, interestRate }: GraphProps) => {
-  // TODO: Add support for different frequencies
-  const currentDateTime = new Date();
-  const labels: string[] = [];
+const Graph = ({ years, initialDeposit, regularDeposit, interestRate, inflationRate, regularDepositFrequency, compoundFrequency }: GraphProps) => {
   const deposits: number[] = [];
   const interests: number[] = [];
   const totals: number[] = [];
-  for (let i = 0; i < months; i++) {
-    const date = new Date(currentDateTime);
-    date.setMonth(date.getMonth() + i);
-    labels.push(date.toLocaleString('default', { month: 'short', year: 'numeric' }));
-    deposits.push(Number(initialDeposit) + Number(regularDeposit) * i);
+  const totalsAfterInflation: number[] = [];
+
+  const currentDateTime = new Date();
+  const labels: string[] = [];
+  const depositsLabel: number[] = [];
+  const interestsLabel: number[] = [];
+  const totalsLabel: number[] = [];
+  const totalsAfterInflationLabel: number[] = [];
+  
+  const days = years * 12 * 28;
+  for (let i = 0; i < days; i++) {
+    switch (regularDepositFrequency) {
+      case Frequency.Daily:
+        deposits.push(Number(initialDeposit) + Number(regularDeposit) * i);
+        break;
+      case Frequency.Weekly:
+        if (i % 7 === 0) {
+          deposits.push(Number(initialDeposit) + Number(regularDeposit) * i / 7);
+        }
+        else {
+          deposits.push(deposits[i-1]);
+        }
+        break;
+      case Frequency.Fortnightly:
+        if (i % 14 === 0) {
+          deposits.push(Number(initialDeposit) + Number(regularDeposit) * i / 14);
+        }
+        else {
+          deposits.push(deposits[i-1]);
+        }
+        break;
+      case Frequency.Monthly:
+        if (i % 28 === 0) {
+          deposits.push(Number(initialDeposit) + Number(regularDeposit) * i / 28);
+        }
+        else {
+          deposits.push(deposits[i-1]);
+        }
+        break;
+      case Frequency.Annually:
+        if (i % (12*28) === 0) {
+          deposits.push(Number(initialDeposit) + Number(regularDeposit) * i / (12*28));
+        }
+        else {
+          deposits.push(deposits[i-1]);
+        }
+        break;
+    }
     if (i === 0) {
       interests.push(0);
       totals.push(deposits[i]);
     }
     else {
-      interests.push(
-        totals[i-1] * (Number(interestRate) / 100 / 12) + interests[i-1]
-      );
+      switch (compoundFrequency) {
+        case Frequency.Daily:
+          interests.push(
+            totals[i-1] * (Number(interestRate) / 100 / 12 / 28) + interests[i-1]
+          );
+          break;
+        case Frequency.Weekly:
+          if (i % 7 === 0) {
+            interests.push(
+              totals[i-1] * (Number(interestRate) / 100 / 12 / 4) + interests[i-1]
+            );
+          }
+          else {
+            interests.push(interests[i-1]);
+          }
+          break;
+        case Frequency.Fortnightly:
+          if (i % 14 === 0) {
+            interests.push(
+              totals[i-1] * (Number(interestRate) / 100 / 12 / 2) + interests[i-1]
+            );
+          }
+          else {
+            interests.push(interests[i-1]);
+          }
+          break;
+        case Frequency.Monthly:
+          if (i % 28 === 0) {
+            interests.push(
+              totals[i-1] * (Number(interestRate) / 100 / 12) + interests[i-1]
+            );
+          }
+          else {
+            interests.push(interests[i-1]);
+          }
+          break;
+        case Frequency.Annually:
+          if (i % (12*28) === 0) {
+            interests.push(
+              totals[i-1] * (Number(interestRate) / 100) + interests[i-1]
+            );
+          }
+          else {
+            interests.push(interests[i-1]);
+          }
+          break;
+      }
       totals.push(deposits[i] + interests[i]);
     }
+    totalsAfterInflation.push(totals[i] / (1 + Number(inflationRate) / 100 / 12 / 28) ** i);
+    if (i % 28 === 0) {
+      const date = new Date(currentDateTime);
+      date.setMonth(date.getMonth() + i / 28);
+      labels.push(date.toLocaleString('default', { month: 'short', year: 'numeric' }));
+      depositsLabel.push(deposits[i]);
+      interestsLabel.push(interests[i]);
+      totalsLabel.push(totals[i]);
+      totalsAfterInflationLabel.push(totalsAfterInflation[i]);
+    }
+    
   }
   
   const data = {
@@ -43,7 +142,7 @@ const Graph = ({ months, initialDeposit, regularDeposit, interestRate }: GraphPr
     datasets: [
       {
         label: "Deposits",
-        data: deposits,
+        data: depositsLabel,
         fill: true,
         backgroundColor: "rgba(75, 192, 192, 0.2)",
         borderColor: "rgb(75, 192, 192)",
@@ -51,7 +150,7 @@ const Graph = ({ months, initialDeposit, regularDeposit, interestRate }: GraphPr
       },
       {
         label: "Interest",
-        data: interests,
+        data: interestsLabel,
         fill: true,
         backgroundColor: "rgba(192, 75, 192, 0.2)",
         borderColor: "rgb(192, 75, 192)",
@@ -59,12 +158,20 @@ const Graph = ({ months, initialDeposit, regularDeposit, interestRate }: GraphPr
       },
       {
         label: "Total",
-        data: totals,
+        data: totalsLabel,
         fill: true,
         backgroundColor: "rgba(192, 192, 75, 0.2)",
         borderColor: "rgb(192, 192, 75)",
         tension: 0.1,
-      }
+      },
+      {
+        label: "Total Value After Inflation",
+        data: totalsAfterInflationLabel,
+        fill: true,
+        backgroundColor: "rgba(192, 75, 75, 0.2)",
+        borderColor: "rgb(192, 75, 75)",
+        tension: 0.1,
+      },
     ],
   };
 
