@@ -78,6 +78,9 @@ export default function Home() {
     const regex = /^\d*$/;
 
     if (regex.test(value)) {
+      if (Number(value) > 99) {
+        value = "99";
+      }
       setYears(value);
     }
   }
@@ -347,7 +350,9 @@ export default function Home() {
       </div>
       
       <div className="mt-10" />
-      <Graph />
+      {(initialDeposit !== "" && regularDeposit !== "" && years !== "" && interestRate !== "") && (
+        <Graph months={Number(years)*12} initialDeposit={Number(initialDeposit.replace("$", ""))} regularDeposit={Number(regularDeposit.replace("$", ""))} interestRate={Number(interestRate.replace("%", ""))}  />
+      )}
       {/* TODO: Add disclaimer below graph and in footer */}
     </div>
   );

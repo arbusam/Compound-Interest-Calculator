@@ -2,57 +2,100 @@
 
 import dynamic from 'next/dynamic';
 import 'chart.js/auto';
+import { ChartOptions } from 'chart.js/auto';
 const Line = dynamic(() => import('react-chartjs-2').then((mod) => mod.Line), {
   ssr: false,
 });
-const data = {
-  labels: [
-    "Month 1","Month 2","Month 3","Month 4","Month 5","Month 6","Month 7","Month 8","Month 9","Month 10",
-    "Month 11","Month 12","Month 13","Month 14","Month 15","Month 16","Month 17","Month 18","Month 19",
-    "Month 20","Month 21","Month 22","Month 23","Month 24"
-  ],
-  datasets: [
-    {
-      label: "Regular Deposits",
-      data: [
-        10,20,30,40,50,60,70,80,90,100,
-        110,120,130,140,150,160,170,180,190,
-        200,210,220,230,240
-      ],
-      fill: true,
-      backgroundColor: "rgba(75, 192, 192, 0.2)",
-      borderColor: "rgb(75, 192, 192)",
-      tension: 0.1,
-    },
-    {
-      label: "Interest",
-      data: [
-        1,3,6,10,15,21,28,36,45,55,
-        66,78,91,105,120,136,153,171,190,
-        210,231,253,276,300
-      ],
-      fill: true,
-      backgroundColor: "rgba(192, 75, 192, 0.2)",
-      borderColor: "rgb(192, 75, 192)",
-      tension: 0.1,
-    },
-    {
-      label: "Total",
-      data: [
-        11,23,36,50,65,81,98,116,135,155,
-        176,198,221,245,270,296,323,351,380,
-        410,441,473,506,540
-      ],
-      fill: true,
-      backgroundColor: "rgba(192, 192, 75, 0.2)",
-      borderColor: "rgb(192, 192, 75)",
-      tension: 0.1,
-    }
-  ],
+
+type GraphProps = {
+  months: number;
+  initialDeposit: number;
+  regularDeposit: number;
+  interestRate: number;
 };
-const Graph = () => {
+
+const Graph = ({ months, initialDeposit, regularDeposit, interestRate }: GraphProps) => {
+  // TODO: Add support for different frequencies
+  const currentDateTime = new Date();
+  const labels: string[] = [];
+  const deposits: number[] = [];
+  const interests: number[] = [];
+  const totals: number[] = [];
+  for (let i = 0; i < months; i++) {
+    const date = new Date(currentDateTime);
+    date.setMonth(date.getMonth() + i);
+    labels.push(date.toLocaleString('default', { month: 'short', year: 'numeric' }));
+    deposits.push(Number(initialDeposit) + Number(regularDeposit) * i);
+    if (i === 0) {
+      interests.push(0);
+      totals.push(deposits[i]);
+    }
+    else {
+      interests.push(
+        totals[i-1] * (Number(interestRate) / 100 / 12) + interests[i-1]
+      );
+      totals.push(deposits[i] + interests[i]);
+    }
+  }
+  
+  const data = {
+    labels: labels,
+    datasets: [
+      {
+        label: "Deposits",
+        data: deposits,
+        fill: true,
+        backgroundColor: "rgba(75, 192, 192, 0.2)",
+        borderColor: "rgb(75, 192, 192)",
+        tension: 0.1,
+      },
+      {
+        label: "Interest",
+        data: interests,
+        fill: true,
+        backgroundColor: "rgba(192, 75, 192, 0.2)",
+        borderColor: "rgb(192, 75, 192)",
+        tension: 0.1,
+      },
+      {
+        label: "Total",
+        data: totals,
+        fill: true,
+        backgroundColor: "rgba(192, 192, 75, 0.2)",
+        borderColor: "rgb(192, 192, 75)",
+        tension: 0.1,
+      }
+    ],
+  };
+
+  const options: ChartOptions<"line"> = {
+    scales: {
+      y: {
+        ticks: {
+          callback: function (value) {
+            return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+          },
+        },
+      },
+    },
+    plugins: {
+      tooltip: {
+        callbacks: {
+          label: function (context) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            label += context.parsed.y.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+            return label;
+          },
+        }
+      }
+    }
+  };
+
   return (
-    <Line data={data} />
+    <Line data={data} options={options} />
   );
 };
 export default Graph;
