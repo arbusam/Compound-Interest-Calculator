@@ -815,27 +815,33 @@ export default function Home() {
         regularDeposit !== "" &&
         years !== "" &&
         interestRate !== "" && (
-          <Graph
-            years={Number(years)}
-            initialDeposit={Number(initialDeposit.replace("$", ""))}
-            regularDeposit={Number(regularDeposit.replace("$", ""))}
-            interestRate={Number(interestRate.replace("%", ""))}
-            inflationRate={Number(inflationRate.replace("%", ""))}
-            regularDepositFrequency={regularDepositFrequency}
-            compoundFrequency={compoundFrequency}
-            annualPromotionRate={
-              useCustomRegularDeposits
-                ? Number(annualPromotionRate.replace("%", ""))
-                : undefined
-            }
-            regularDepositEndDate={
-              useCustomRegularDeposits && useRegularDepositEndDateChange
-                ? regularDepositEndDate
-                : undefined
-            }
-          />
+          <div>
+            <Graph
+              years={Number(years)}
+              initialDeposit={Number(initialDeposit.replace("$", ""))}
+              regularDeposit={Number(regularDeposit.replace("$", ""))}
+              interestRate={Number(interestRate.replace("%", ""))}
+              inflationRate={Number(inflationRate.replace("%", ""))}
+              regularDepositFrequency={regularDepositFrequency}
+              compoundFrequency={compoundFrequency}
+              annualPromotionRate={
+                useCustomRegularDeposits
+                  ? Number(annualPromotionRate.replace("%", ""))
+                  : undefined
+              }
+              regularDepositEndDate={
+                useCustomRegularDeposits && useRegularDepositEndDateChange
+                  ? regularDepositEndDate
+                  : undefined
+              }
+            />
+            <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-10">
+              Disclaimer: This calculator is for illustrative purposes only and
+              does not constitute financial advice. All calculations are
+              approximations and should not be used for any financial decisions.
+            </p>
+          </div>
         )}
-      {/* TODO: Add disclaimer below graph and in footer */}
     </div>
   );
 }
