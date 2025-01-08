@@ -16,9 +16,13 @@ type GraphProps = {
   inflationRate: number;
   regularDepositFrequency: Frequency;
   compoundFrequency: Frequency;
+  annualPromotionRate?: number;
+  regularDepositEndDate?: Date;
 };
 
-const Graph = ({ years, initialDeposit, regularDeposit, interestRate, inflationRate, regularDepositFrequency, compoundFrequency }: GraphProps) => {
+const Graph = ({ years, initialDeposit, regularDeposit, interestRate, inflationRate, regularDepositFrequency, compoundFrequency, annualPromotionRate, regularDepositEndDate }: GraphProps) => {
+  let currentRegularDeposit = regularDeposit;
+  
   const deposits: number[] = [];
   const interests: number[] = [];
   const totals: number[] = [];
@@ -33,43 +37,58 @@ const Graph = ({ years, initialDeposit, regularDeposit, interestRate, inflationR
   
   const days = years * 12 * 28;
   for (let i = 0; i < days; i++) {
-    switch (regularDepositFrequency) {
-      case Frequency.Daily:
-        deposits.push(Number(initialDeposit) + Number(regularDeposit) * i);
-        break;
-      case Frequency.Weekly:
-        if (i % 7 === 0) {
-          deposits.push(Number(initialDeposit) + Number(regularDeposit) * i / 7);
-        }
-        else {
-          deposits.push(deposits[i-1]);
-        }
-        break;
-      case Frequency.Fortnightly:
-        if (i % 14 === 0) {
-          deposits.push(Number(initialDeposit) + Number(regularDeposit) * i / 14);
-        }
-        else {
-          deposits.push(deposits[i-1]);
-        }
-        break;
-      case Frequency.Monthly:
-        if (i % 28 === 0) {
-          deposits.push(Number(initialDeposit) + Number(regularDeposit) * i / 28);
-        }
-        else {
-          deposits.push(deposits[i-1]);
-        }
-        break;
-      case Frequency.Annually:
-        if (i % (12*28) === 0) {
-          deposits.push(Number(initialDeposit) + Number(regularDeposit) * i / (12*28));
-        }
-        else {
-          deposits.push(deposits[i-1]);
-        }
-        break;
+    const dayDate = new Date(currentDateTime);
+    dayDate.setDate(dayDate.getDate() + i);
+
+    if (regularDepositEndDate && dayDate > regularDepositEndDate) {
+      if (i === 0) {
+        deposits.push(Number(initialDeposit));
+      } else {
+        deposits.push(deposits[i-1]);
+      }
+    } else {
+      if (annualPromotionRate && i % (12*28) === 0) {
+        currentRegularDeposit *= (1 + annualPromotionRate / 100);
+      }
+      switch (regularDepositFrequency) {
+        case Frequency.Daily:
+          deposits.push(Number(initialDeposit) + Number(currentRegularDeposit) * i);
+          break;
+        case Frequency.Weekly:
+          if (i % 7 === 0) {
+            deposits.push(Number(initialDeposit) + Number(currentRegularDeposit) * i / 7);
+          }
+          else {
+            deposits.push(deposits[i-1]);
+          }
+          break;
+        case Frequency.Fortnightly:
+          if (i % 14 === 0) {
+            deposits.push(Number(initialDeposit) + Number(currentRegularDeposit) * i / 14);
+          }
+          else {
+            deposits.push(deposits[i-1]);
+          }
+          break;
+        case Frequency.Monthly:
+          if (i % 28 === 0) {
+            deposits.push(Number(initialDeposit) + Number(currentRegularDeposit) * i / 28);
+          }
+          else {
+            deposits.push(deposits[i-1]);
+          }
+          break;
+        case Frequency.Annually:
+          if (i % (12*28) === 0) {
+            deposits.push(Number(initialDeposit) + Number(currentRegularDeposit) * i / (12*28));
+          }
+          else {
+            deposits.push(deposits[i-1]);
+          }
+          break;
+      }
     }
+
     if (i === 0) {
       interests.push(0);
       totals.push(deposits[i]);
