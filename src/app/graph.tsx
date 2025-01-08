@@ -1,10 +1,10 @@
 "use client";
 
-import dynamic from 'next/dynamic';
-import 'chart.js/auto';
-import { ChartOptions } from 'chart.js/auto';
-import { Frequency } from '@/types/frequency';
-const Line = dynamic(() => import('react-chartjs-2').then((mod) => mod.Line), {
+import dynamic from "next/dynamic";
+import "chart.js/auto";
+import { ChartOptions } from "chart.js/auto";
+import { Frequency } from "@/types/frequency";
+const Line = dynamic(() => import("react-chartjs-2").then((mod) => mod.Line), {
   ssr: false,
 });
 
@@ -20,9 +20,19 @@ type GraphProps = {
   regularDepositEndDate?: Date;
 };
 
-const Graph = ({ years, initialDeposit, regularDeposit, interestRate, inflationRate, regularDepositFrequency, compoundFrequency, annualPromotionRate, regularDepositEndDate }: GraphProps) => {
+const Graph = ({
+  years,
+  initialDeposit,
+  regularDeposit,
+  interestRate,
+  inflationRate,
+  regularDepositFrequency,
+  compoundFrequency,
+  annualPromotionRate,
+  regularDepositEndDate,
+}: GraphProps) => {
   let currentRegularDeposit = regularDeposit;
-  
+
   const deposits: number[] = [];
   const interests: number[] = [];
   const totals: number[] = [];
@@ -34,7 +44,7 @@ const Graph = ({ years, initialDeposit, regularDeposit, interestRate, inflationR
   const interestsLabel: number[] = [];
   const totalsLabel: number[] = [];
   const totalsAfterInflationLabel: number[] = [];
-  
+
   const days = years * 12 * 28;
   for (let i = 0; i < days; i++) {
     const dayDate = new Date(currentDateTime);
@@ -44,46 +54,53 @@ const Graph = ({ years, initialDeposit, regularDeposit, interestRate, inflationR
       if (i === 0) {
         deposits.push(Number(initialDeposit));
       } else {
-        deposits.push(deposits[i-1]);
+        deposits.push(deposits[i - 1]);
       }
     } else {
-      if (annualPromotionRate && i % (12*28) === 0) {
-        currentRegularDeposit *= (1 + annualPromotionRate / 100);
+      if (annualPromotionRate && i % (12 * 28) === 0) {
+        currentRegularDeposit *= 1 + annualPromotionRate / 100;
       }
       switch (regularDepositFrequency) {
         case Frequency.Daily:
-          deposits.push(Number(initialDeposit) + Number(currentRegularDeposit) * i);
+          deposits.push(
+            Number(initialDeposit) + Number(currentRegularDeposit) * i,
+          );
           break;
         case Frequency.Weekly:
           if (i % 7 === 0) {
-            deposits.push(Number(initialDeposit) + Number(currentRegularDeposit) * i / 7);
-          }
-          else {
-            deposits.push(deposits[i-1]);
+            deposits.push(
+              Number(initialDeposit) + (Number(currentRegularDeposit) * i) / 7,
+            );
+          } else {
+            deposits.push(deposits[i - 1]);
           }
           break;
         case Frequency.Fortnightly:
           if (i % 14 === 0) {
-            deposits.push(Number(initialDeposit) + Number(currentRegularDeposit) * i / 14);
-          }
-          else {
-            deposits.push(deposits[i-1]);
+            deposits.push(
+              Number(initialDeposit) + (Number(currentRegularDeposit) * i) / 14,
+            );
+          } else {
+            deposits.push(deposits[i - 1]);
           }
           break;
         case Frequency.Monthly:
           if (i % 28 === 0) {
-            deposits.push(Number(initialDeposit) + Number(currentRegularDeposit) * i / 28);
-          }
-          else {
-            deposits.push(deposits[i-1]);
+            deposits.push(
+              Number(initialDeposit) + (Number(currentRegularDeposit) * i) / 28,
+            );
+          } else {
+            deposits.push(deposits[i - 1]);
           }
           break;
         case Frequency.Annually:
-          if (i % (12*28) === 0) {
-            deposits.push(Number(initialDeposit) + Number(currentRegularDeposit) * i / (12*28));
-          }
-          else {
-            deposits.push(deposits[i-1]);
+          if (i % (12 * 28) === 0) {
+            deposits.push(
+              Number(initialDeposit) +
+                (Number(currentRegularDeposit) * i) / (12 * 28),
+            );
+          } else {
+            deposits.push(deposits[i - 1]);
           }
           break;
       }
@@ -92,70 +109,72 @@ const Graph = ({ years, initialDeposit, regularDeposit, interestRate, inflationR
     if (i === 0) {
       interests.push(0);
       totals.push(deposits[i]);
-    }
-    else {
+    } else {
       switch (compoundFrequency) {
         case Frequency.Daily:
           interests.push(
-            totals[i-1] * (Number(interestRate) / 100 / 12 / 28) + interests[i-1]
+            totals[i - 1] * (Number(interestRate) / 100 / 12 / 28) +
+              interests[i - 1],
           );
           break;
         case Frequency.Weekly:
           if (i % 7 === 0) {
             interests.push(
-              totals[i-1] * (Number(interestRate) / 100 / 12 / 4) + interests[i-1]
+              totals[i - 1] * (Number(interestRate) / 100 / 12 / 4) +
+                interests[i - 1],
             );
-          }
-          else {
-            interests.push(interests[i-1]);
+          } else {
+            interests.push(interests[i - 1]);
           }
           break;
         case Frequency.Fortnightly:
           if (i % 14 === 0) {
             interests.push(
-              totals[i-1] * (Number(interestRate) / 100 / 12 / 2) + interests[i-1]
+              totals[i - 1] * (Number(interestRate) / 100 / 12 / 2) +
+                interests[i - 1],
             );
-          }
-          else {
-            interests.push(interests[i-1]);
+          } else {
+            interests.push(interests[i - 1]);
           }
           break;
         case Frequency.Monthly:
           if (i % 28 === 0) {
             interests.push(
-              totals[i-1] * (Number(interestRate) / 100 / 12) + interests[i-1]
+              totals[i - 1] * (Number(interestRate) / 100 / 12) +
+                interests[i - 1],
             );
-          }
-          else {
-            interests.push(interests[i-1]);
+          } else {
+            interests.push(interests[i - 1]);
           }
           break;
         case Frequency.Annually:
-          if (i % (12*28) === 0) {
+          if (i % (12 * 28) === 0) {
             interests.push(
-              totals[i-1] * (Number(interestRate) / 100) + interests[i-1]
+              totals[i - 1] * (Number(interestRate) / 100) + interests[i - 1],
             );
-          }
-          else {
-            interests.push(interests[i-1]);
+          } else {
+            interests.push(interests[i - 1]);
           }
           break;
       }
       totals.push(deposits[i] + interests[i]);
     }
-    totalsAfterInflation.push(totals[i] / (1 + Number(inflationRate) / 100 / 12 / 28) ** i);
+    totalsAfterInflation.push(
+      totals[i] / (1 + Number(inflationRate) / 100 / 12 / 28) ** i,
+    );
     if (i % 28 === 0) {
       const date = new Date(currentDateTime);
       date.setMonth(date.getMonth() + i / 28);
-      labels.push(date.toLocaleString('default', { month: 'short', year: 'numeric' }));
+      labels.push(
+        date.toLocaleString("default", { month: "short", year: "numeric" }),
+      );
       depositsLabel.push(deposits[i]);
       interestsLabel.push(interests[i]);
       totalsLabel.push(totals[i]);
       totalsAfterInflationLabel.push(totalsAfterInflation[i]);
     }
-    
   }
-  
+
   const data = {
     labels: labels,
     datasets: [
@@ -199,7 +218,10 @@ const Graph = ({ years, initialDeposit, regularDeposit, interestRate, inflationR
       y: {
         ticks: {
           callback: function (value) {
-            return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+            return value.toLocaleString("en-US", {
+              style: "currency",
+              currency: "USD",
+            });
           },
         },
       },
@@ -208,20 +230,21 @@ const Graph = ({ years, initialDeposit, regularDeposit, interestRate, inflationR
       tooltip: {
         callbacks: {
           label: function (context) {
-            let label = context.dataset.label || '';
+            let label = context.dataset.label || "";
             if (label) {
-              label += ': ';
+              label += ": ";
             }
-            label += context.parsed.y.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+            label += context.parsed.y.toLocaleString("en-US", {
+              style: "currency",
+              currency: "USD",
+            });
             return label;
           },
-        }
-      }
-    }
+        },
+      },
+    },
   };
 
-  return (
-    <Line data={data} options={options} />
-  );
+  return <Line data={data} options={options} />;
 };
 export default Graph;
