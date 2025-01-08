@@ -416,8 +416,7 @@ export default function Home() {
           Advanced Compound Interest Calculator
         </h1>
         <h2 className="text-center text-xl mt-2 mb-5">
-          Find the best strategy to help your money will grow, adapted to
-          changes in your life.
+          Find the best strategy to help your money will grow, adapted to changes in your life.
         </h2>
       </div>
       <div className="grid grid-cols-3 gap-4">
